@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>API_KEY</key>
+	<string>AIzaSyDFSpZJYTHpWeWMao-pDmpezbRoS8jvz-w</string>
+	<key>GCM_SENDER_ID</key>
+	<string>1069425920284</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.example.badukApp</string>
+	<key>PROJECT_ID</key>
+	<string>app-for-baduk-robot-5vzlm0</string>
+	<key>STORAGE_BUCKET</key>
+	<string>app-for-baduk-robot-5vzlm0.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:1069425920284:ios:a111e95c1d4a4205f312d9</string>
+	<key>DATABASE_URL</key>
+	<string>https://app-for-baduk-robot-5vzlm0-default-rtdb.asia-southeast1.firebasedatabase.app</string>
+</dict>
+</plist>

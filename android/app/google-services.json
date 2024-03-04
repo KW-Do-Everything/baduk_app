@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "1069425920284",
+    "firebase_url": "https://app-for-baduk-robot-5vzlm0-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "app-for-baduk-robot-5vzlm0",
+    "storage_bucket": "app-for-baduk-robot-5vzlm0.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1069425920284:android:52028432ae495a31f312d9",
+        "android_client_info": {
+          "package_name": "com.example.baduk_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBrqO85pYv2U_s2Ycg_-wOdNmGkFsu3Vvo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
