@@ -145,7 +145,7 @@ class GoGamePainter extends CustomPainter {
       canvas.drawCircle(dot, dotSize, dotPaint);
     }
 
-    if (gameState != null && gameState!.length == 19 * 19) {
+    if (true) {
       // 바둑돌 그리기
       for (int i = 0; i < gameState!.length; i++) {
         int x = i % 19;
