@@ -1,8 +1,11 @@
 import 'dart:math';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:provider/provider.dart';
 import 'login_screen.dart';
+
+double PI = 3.141592;
 
 // =============== 메인 ===============
 class MainScreen extends StatefulWidget {
@@ -32,7 +35,7 @@ class _MainScreenState extends State<MainScreen>
     DatabaseReference ref =
         FirebaseDatabase.instance.ref('Robots/$robotNum/state');
     ref.onValue.listen((DatabaseEvent event) {
-      print(event);
+      //print(event);
       String newState = event.snapshot.value.toString();
       setState(() {
         gameState = newState;
@@ -44,9 +47,13 @@ class _MainScreenState extends State<MainScreen>
 
   @override
   Widget build(BuildContext context) {
-    double boardSize = min(MediaQuery.of(context).size.width,
-            MediaQuery.of(context).size.height) *
-        0.8;
+    double width = MediaQuery.of(context).size.width;
+    double height = MediaQuery.of(context).size.height;
+
+    double boardSize = min(width, height) * 0.8;
+
+    double widgetHeightSize = width > height ? (height * 0.3) : (height * 0.2);
+    double widgetWidthSize = MediaQuery.of(context).size.width / 2;
 
     return WillPopScope(
       onWillPop: () async {
@@ -63,7 +70,7 @@ class _MainScreenState extends State<MainScreen>
             controller: _tabController,
             tabs: const [
               Tab(text: '현재 상태 확인'),
-              Tab(text: '추천 수 확인'),
+              Tab(text: 'AI 분석'),
             ],
           ),
         ),
@@ -78,14 +85,51 @@ class _MainScreenState extends State<MainScreen>
             ),
 
             // 추천 수 탭
-            Column(children: <Widget>[
-              CustomPaint(
-                size: Size(boardSize * 0.8, boardSize * 0.8),
-                painter: GoGamePainter(gameState, recommended),
-              ),
-              SizedBox(height: boardSize * 0.05),
-              GameInfoWidget(),
-            ]),
+            Container(
+                padding: EdgeInsets.fromLTRB(30, 10, 30, 10),
+                child: SingleChildScrollView(
+                  child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: <Widget>[
+                        CustomPaint(
+                          size: Size(boardSize * 0.7, boardSize * 0.7),
+                          painter: GoGamePainter(gameState, recommended),
+                        ),
+                        SizedBox(height: boardSize * 0.01),
+                        //GameInfoWidget(),
+                        Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: <Widget>[
+                              Container(
+                                margin: EdgeInsets.fromLTRB(0, 0, 10, 0),
+                                child: CustomPaint(
+                                    size:
+                                        Size(widgetWidthSize, widgetHeightSize),
+                                    painter: winratePainter(50.2)),
+                              ),
+                              Container(
+                                margin: EdgeInsets.fromLTRB(10, 0, 0, 0),
+                                child: Column(
+                                  children: <Widget>[
+                                    Container(
+                                        margin: EdgeInsets.fromLTRB(0, 0, 0, 5),
+                                        child: CustomPaint(
+                                            size: Size(widgetWidthSize * 0.6,
+                                                widgetHeightSize / 2),
+                                            painter:
+                                                housePainter(["b", "0.3"]))),
+                                    Container(
+                                        margin: EdgeInsets.fromLTRB(0, 5, 0, 0),
+                                        child: CustomPaint(
+                                            size: Size(widgetWidthSize * 0.6,
+                                                widgetHeightSize / 2),
+                                            painter: recommandPainter("C15"))),
+                                  ],
+                                ),
+                              ),
+                            ]),
+                      ]),
+                ))
           ]),
         ),
       ),
@@ -145,7 +189,7 @@ class GoGamePainter extends CustomPainter {
       canvas.drawCircle(dot, dotSize, dotPaint);
     }
 
-    if (gameState != null && gameState!.length == 19 * 19) {
+    if (true) {
       // 바둑돌 그리기
       for (int i = 0; i < gameState!.length; i++) {
         int x = i % 19;
@@ -236,6 +280,238 @@ class GameInfo extends ChangeNotifier {
 }
 
 // =============== 각종 정보 위젯 ===============
+class winratePainter extends CustomPainter {
+  var winrate;
+
+  winratePainter(this.winrate);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    var widgetPaint = Paint()..color = Color(0xff999966);
+    BorderRadius borderRadius = BorderRadius.circular(20);
+    Rect winrateRect = Rect.fromLTWH(0, 0, size.width, size.height);
+    RRect winrateOutter = borderRadius.toRRect(winrateRect);
+    canvas.drawRRect(winrateOutter, widgetPaint);
+
+    var textStyle = TextStyle(
+        color: Colors.black,
+        fontSize: size.height * 0.12,
+        fontWeight: FontWeight.bold);
+    var textSpan = TextSpan(style: textStyle, text: "승률");
+    var textPainter = TextPainter(
+      text: textSpan,
+      textDirection: TextDirection.ltr,
+      textAlign: TextAlign.center,
+    );
+    textPainter.layout();
+    textPainter.paint(canvas,
+        Offset((size.width - textPainter.width) * 0.5, size.height * 0.1));
+
+    var winBlackPaint = Paint()
+      ..color = Color(0xff333333)
+      ..style = PaintingStyle.fill;
+    canvas.drawCircle(Offset(size.width * 0.15, size.height * 0.6),
+        size.width * 0.09, winBlackPaint);
+    var borderPaint = Paint()
+      ..color = Color(0xff000000)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2;
+    canvas.drawCircle(Offset(size.width * 0.15, size.height * 0.6),
+        size.width * 0.09, borderPaint);
+
+    textStyle = TextStyle(color: Colors.white, fontSize: size.width * 0.05);
+    textSpan =
+        TextSpan(style: textStyle, text: winrate.toString() + "%"); // winrate
+    textPainter = TextPainter(
+      text: textSpan,
+      textDirection: TextDirection.ltr,
+      textAlign: TextAlign.center,
+    );
+    textPainter.layout();
+    textPainter.paint(
+        canvas,
+        Offset(size.width * 0.15 - textPainter.width / 2,
+            size.height * 0.6 - textPainter.height / 2));
+
+    textStyle = TextStyle(color: Colors.black, fontSize: size.width * 0.05);
+    textSpan = TextSpan(style: textStyle, text: "vs");
+    textPainter = TextPainter(
+      text: textSpan,
+      textDirection: TextDirection.ltr,
+      textAlign: TextAlign.center,
+    );
+    textPainter.layout();
+    textPainter.paint(
+        canvas,
+        Offset(size.width * 0.29 - textPainter.width / 2,
+            size.height * 0.6 - textPainter.height / 2));
+
+    var winWhitePaint = Paint()
+      ..color = Color(0xffffffff)
+      ..style = PaintingStyle.fill;
+    canvas.drawCircle(Offset(size.width * 0.43, size.height * 0.6),
+        size.width * 0.09, winWhitePaint);
+    borderPaint = Paint()
+      ..color = Color(0xff000000)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2;
+    canvas.drawCircle(Offset(size.width * 0.43, size.height * 0.6),
+        size.width * 0.09, borderPaint);
+
+    textStyle = TextStyle(color: Colors.black, fontSize: size.width * 0.05);
+    textSpan = TextSpan(
+        style: textStyle, text: (100 - winrate).toString() + "%"); // winrate
+    textPainter = TextPainter(
+      text: textSpan,
+      textDirection: TextDirection.ltr,
+      textAlign: TextAlign.center,
+    );
+    textPainter.layout();
+    textPainter.paint(
+        canvas,
+        Offset(size.width * 0.43 - textPainter.width / 2,
+            size.height * 0.6 - textPainter.height / 2));
+
+    var winrateStonePaint = Paint()
+      ..color = Color(0xff333333)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 30.0;
+    canvas.drawArc(
+        Rect.fromCenter(
+            center: Offset(size.width * 0.8, size.height * 0.6),
+            width: size.width * 0.2,
+            height: size.width * 0.2),
+        0,
+        PI * 2 * (winrate / 100), // black winrate
+        false,
+        winrateStonePaint);
+
+    winrateStonePaint.color = Color(0xffffffff);
+    canvas.drawArc(
+        Rect.fromCenter(
+            center: Offset(size.width * 0.8, size.height * 0.6),
+            width: size.width * 0.2,
+            height: size.width * 0.2),
+        PI * 2 * (winrate / 100),
+        PI * 2 * ((100 - winrate) / 100),
+        false,
+        winrateStonePaint);
+  }
+
+  @override
+  bool shouldRepaint(covariant winratePainter oldDelegate) {
+    return (oldDelegate.winrate != winrate);
+  }
+}
+
+class housePainter extends CustomPainter {
+  var house;
+
+  housePainter(this.house);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    var widgetPaint = Paint()..color = Color(0xff999966);
+    BorderRadius borderRadius = BorderRadius.circular(20);
+    Rect winrateRect = Rect.fromLTWH(0, 0, size.width, size.height);
+    RRect winrateOutter = borderRadius.toRRect(winrateRect);
+    canvas.drawRRect(winrateOutter, widgetPaint);
+
+    var textStyle = TextStyle(
+        color: Colors.black,
+        fontSize: size.height * 0.2,
+        fontWeight: FontWeight.bold);
+    var textSpan = TextSpan(style: textStyle, text: "예상 집차이");
+    var textPainter = TextPainter(
+      text: textSpan,
+      textDirection: TextDirection.ltr,
+      textAlign: TextAlign.center,
+    );
+    textPainter.layout();
+    textPainter.paint(canvas,
+        Offset((size.width - textPainter.width) * 0.5, size.height * 0.1));
+
+    textStyle = TextStyle(color: Colors.black, fontSize: size.height * 0.2);
+    textSpan = TextSpan(style: textStyle, text: "B+0.35"); // 집차이 변수로 넣기
+    textPainter = TextPainter(
+      text: textSpan,
+      textDirection: TextDirection.ltr,
+      textAlign: TextAlign.center,
+    );
+    textPainter.layout();
+    textPainter.paint(canvas,
+        Offset((size.width - textPainter.width) * 0.5, size.height * 0.5));
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) {
+    // TODO: implement shouldRepaint
+    throw UnimplementedError();
+  }
+}
+
+class recommandPainter extends CustomPainter {
+  var best;
+
+  recommandPainter(this.best);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    var widgetPaint = Paint()..color = Color(0xff999966);
+    BorderRadius borderRadius = BorderRadius.circular(20);
+    Rect winrateRect = Rect.fromLTWH(0, 0, size.width, size.height);
+    RRect winrateOutter = borderRadius.toRRect(winrateRect);
+    canvas.drawRRect(winrateOutter, widgetPaint);
+
+    var textStyle = TextStyle(
+        color: Colors.black,
+        fontSize: size.height * 0.2,
+        fontWeight: FontWeight.bold);
+    var textSpan = TextSpan(style: textStyle, text: "추천 수");
+    var textPainter = TextPainter(
+      text: textSpan,
+      textDirection: TextDirection.ltr,
+      textAlign: TextAlign.center,
+    );
+    textPainter.layout();
+    textPainter.paint(canvas,
+        Offset((size.width - textPainter.width) * 0.5, size.height * 0.1));
+
+    textStyle = TextStyle(color: Colors.black, fontSize: size.height * 0.2);
+    textSpan = TextSpan(style: textStyle, text: best);
+    textPainter = TextPainter(
+      text: textSpan,
+      textDirection: TextDirection.ltr,
+      textAlign: TextAlign.center,
+    );
+    textPainter.layout();
+    textPainter.paint(canvas,
+        Offset((size.width - textPainter.width) * 0.5, size.height * 0.5));
+
+    var recommandPaint = Paint()
+      ..color = Color(0xffffffff)
+      ..style = PaintingStyle.fill;
+    canvas.drawCircle(
+        Offset(size.width * 0.3, size.height * 0.5 + textPainter.height * 0.5),
+        size.height * 0.12,
+        recommandPaint);
+    var borderPaint = Paint()
+      ..color = Color(0xff000000)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2;
+    canvas.drawCircle(
+        Offset(size.width * 0.3, size.height * 0.5 + textPainter.height * 0.5),
+        size.height * 0.12,
+        borderPaint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) {
+    // TODO: implement shouldRepaint
+    throw UnimplementedError();
+  }
+}
+
 class GameInfoWidget extends StatelessWidget {
   const GameInfoWidget({super.key});
 
