@@ -92,8 +92,19 @@ class _MainScreenState extends State<MainScreen>
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: <Widget>[
                         CustomPaint(
-                          size: Size(boardSize * 0.7, boardSize * 0.7),
-                          painter: GoGamePainter(gameState, recommended),
+                          size: Size(boardSize * 0.8, boardSize * 0.8),
+                          painter: GoGamePainter(gameState, [
+                            'C15',
+                            '0.0%',
+                            'E15',
+                            '0.0%',
+                            'K1',
+                            '0.0%',
+                            'B18',
+                            '0.0%',
+                            'N8',
+                            '0.0%'
+                          ]),
                         ),
                         SizedBox(height: boardSize * 0.01),
                         //GameInfoWidget(),
@@ -123,7 +134,7 @@ class _MainScreenState extends State<MainScreen>
                                         child: CustomPaint(
                                             size: Size(widgetWidthSize * 0.6,
                                                 widgetHeightSize / 2),
-                                            painter: recommandPainter("C15"))),
+                                            painter: recommendPainter("C15"))),
                                   ],
                                 ),
                               ),
@@ -141,6 +152,14 @@ class _MainScreenState extends State<MainScreen>
 class GoGamePainter extends CustomPainter {
   String? gameState;
   var recommended;
+  var color = [
+    Colors.red,
+    Colors.orange,
+    Colors.yellow,
+    Colors.green,
+    Colors.blue
+  ];
+
   GoGamePainter(this.gameState, this.recommended);
 
   @override
@@ -257,6 +276,94 @@ class GoGamePainter extends CustomPainter {
     }
 
     // Todo: if recommeded is not null, draw recommend stones
+    RegExp regex = RegExp(r'([A-Za-z]+)(\d+)');
+    Map atoi = {
+      'A': 1,
+      'B': 2,
+      'C': 3,
+      'D': 4,
+      'E': 5,
+      'F': 6,
+      'G': 7,
+      'H': 8,
+      'J': 9,
+      'K': 10,
+      'L': 11,
+      'M': 12,
+      'N': 13,
+      'O': 14,
+      'P': 15,
+      'Q': 16,
+      'R': 17,
+      'S': 18,
+      'T': 19
+    };
+    if (recommended != null) {
+      for (int i = 0; i < recommended.length; i += 2) {
+        Match match = regex.firstMatch(recommended[i]) as Match;
+        String? letter = match.group(1);
+        String? num = match.group(2);
+
+        int x = atoi[letter] - 1;
+        int y = 19 - int.parse(num!);
+
+        double xPos = (x + 1) * cellSize;
+        double yPos = (y + 1) * cellSize;
+
+        var stonePaint = Paint()
+          ..color = color[i ~/ 2]
+          ..style = PaintingStyle.fill;
+        canvas.drawCircle(Offset(xPos, yPos), stoneSize / 2, stonePaint);
+
+        var borderPaint = Paint()
+          ..color = Colors.black
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 2;
+        canvas.drawCircle(Offset(xPos, yPos), stoneSize / 2, borderPaint);
+
+        xPos = (20 + 1) * cellSize;
+        yPos = (i ~/ 2 + 1) * cellSize;
+
+        textSpan =
+            TextSpan(style: textStyle, text: (i ~/ 2 + 1).toString() + ". ");
+        textPainter = TextPainter(
+          text: textSpan,
+          textDirection: TextDirection.ltr,
+          textAlign: TextAlign.center,
+        );
+        textPainter.layout();
+        textPainter.paint(
+            canvas,
+            Offset(
+                xPos - textPainter.width / 2, yPos - textPainter.height / 2));
+
+        stonePaint = Paint()
+          ..color = color[i ~/ 2]
+          ..style = PaintingStyle.fill;
+        canvas.drawCircle(
+            Offset(xPos + cellSize, yPos), stoneSize / 2, stonePaint);
+
+        borderPaint = Paint()
+          ..color = Colors.black
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 2;
+        canvas.drawCircle(
+            Offset(xPos + cellSize, yPos), stoneSize / 2, borderPaint);
+
+        textSpan =
+            TextSpan(style: textStyle, text: (recommended[i + 1]).toString());
+        textPainter = TextPainter(
+          text: textSpan,
+          textDirection: TextDirection.ltr,
+          textAlign: TextAlign.center,
+        );
+        textPainter.layout();
+        textPainter.paint(
+            canvas,
+            Offset(xPos + cellSize * 2 - textPainter.width / 2,
+                yPos - textPainter.height / 2));
+      }
+    }
   }
 
   @override
@@ -375,7 +482,7 @@ class winratePainter extends CustomPainter {
     var winrateStonePaint = Paint()
       ..color = Color(0xff333333)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 30.0;
+      ..strokeWidth = 20.0;
     canvas.drawArc(
         Rect.fromCenter(
             center: Offset(size.width * 0.8, size.height * 0.6),
@@ -450,10 +557,10 @@ class housePainter extends CustomPainter {
   }
 }
 
-class recommandPainter extends CustomPainter {
+class recommendPainter extends CustomPainter {
   var best;
 
-  recommandPainter(this.best);
+  recommendPainter(this.best);
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -486,15 +593,15 @@ class recommandPainter extends CustomPainter {
     );
     textPainter.layout();
     textPainter.paint(canvas,
-        Offset((size.width - textPainter.width) * 0.5, size.height * 0.5));
+        Offset((size.width - textPainter.width) * 0.55, size.height * 0.5));
 
-    var recommandPaint = Paint()
+    var recommendPaint = Paint()
       ..color = Color(0xffffffff)
       ..style = PaintingStyle.fill;
     canvas.drawCircle(
         Offset(size.width * 0.3, size.height * 0.5 + textPainter.height * 0.5),
         size.height * 0.12,
-        recommandPaint);
+        recommendPaint);
     var borderPaint = Paint()
       ..color = Color(0xff000000)
       ..style = PaintingStyle.stroke
