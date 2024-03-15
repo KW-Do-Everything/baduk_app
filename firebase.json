@@ -1,5 +1,6 @@
 {
   "hosting": {
+    "site": "kw-do-everything",
     "public": "build/web",
     "ignore": [
       "firebase.json",
