@@ -1,3 +1,3 @@
-# go_bot_app
+# App for Go_bot
 
-A new Flutter project.
+https://kw-do-everything.web.app
