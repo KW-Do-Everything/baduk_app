@@ -31,6 +31,8 @@ class _MainScreenState extends State<MainScreen>
   int _seconds = 0;
   late Timer _timer;
 
+  bool finish = false;
+
   @override
   void initState() {
     super.initState();
@@ -52,6 +54,10 @@ class _MainScreenState extends State<MainScreen>
         recommend = serverData['AI']['recommend'];
         territory = serverData['AI']['territory'];
         winRate = serverData['AI']['winRate'];
+        finish = serverData['finish'];
+        if (finish) {
+          btnOnpress();
+        }
       });
       context.read<GameInfo>().updateGameState(serverData['state']);
     });
@@ -99,8 +105,75 @@ class _MainScreenState extends State<MainScreen>
     } else {
       btnstring = "대국 시작";
       btnstart = true;
+      finish = false;
+      ref.update({'finish':finish});
       btncolor = Colors.green;
       _timer.cancel();
+
+      ref.child('AI/territory').once().then((DatabaseEvent event) {
+        String resultData =
+            jsonDecode(jsonEncode(event.snapshot.value)) as String;
+        String resultMessage = resultData[0] == 'B' ? 'You Win!' : 'You Lose...';
+        Icon resultIcon = resultData[0] == 'B'
+            ? Icon(Icons.emoji_events, size: 50, color: Colors.yellow)
+            : Icon(Icons.sentiment_very_dissatisfied, size: 50, color: Colors.red);
+
+        Color backgroundColor = resultData[0] == 'B' ? Colors.green : Colors.red;
+
+        String formattedTime = '${((_seconds ~/ 60) ~/ 60).toString().padLeft(2, '0')} : ${((_seconds ~/ 60) % 60).toString().padLeft(2, '0')} : ${(_seconds % 60).toString().padLeft(2, '0')}';
+
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              backgroundColor: backgroundColor,
+              title: Row(
+                children: [
+                  resultIcon,
+                  SizedBox(width: 10),
+                  Text(
+                    "대국 결과",
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ],
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    resultMessage,
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  SizedBox(height: 10),
+                  Text(
+                    '대국 시간: $formattedTime',
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
+              ),
+              actions: [
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: backgroundColor,
+                  ),
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: const Text('확인'),
+                )
+              ],
+            );
+          },
+        );
+      });
 
       ref.update({'init': false});
     }
